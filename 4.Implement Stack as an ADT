@@ -1,0 +1,154 @@
+4. Implement Stack as an ADT and use it to evaluate a prefix/postfix expression. 
+
+#include <bits/stdc++.h>
+using namespace std;
+
+// Simple Stack ADT (wrapper around vector)
+template<typename T>
+class Stack {
+private:
+    vector<T> data;
+public:
+    Stack() = default;
+    void push(const T &x) { data.push_back(x); }
+    T pop() {
+        if (data.empty()) throw runtime_error("Stack underflow");
+        T v = data.back(); data.pop_back(); return v;
+    }
+    T top() const {
+        if (data.empty()) throw runtime_error("Stack is empty");
+        return data.back();
+    }
+    bool isEmpty() const { return data.empty(); }
+    size_t size() const { return data.size(); }
+};
+
+// Helper: is token an operator (+ - * /)
+bool isOperator(const string &tok) {
+    return tok == "+" || tok == "-" || tok == "*" || tok == "/";
+}
+
+// Apply operator to two operands (a op b)
+double applyOp(const string &op, double a, double b) {
+    if (op == "+") return a + b;
+    if (op == "-") return a - b;
+    if (op == "*") return a * b;
+    if (op == "/") {
+        if (b == 0) throw runtime_error("Division by zero");
+        return a / b;
+    }
+    throw runtime_error("Unknown operator: " + op);
+}
+
+// Evaluate postfix expression. Tokens must be space-separated.
+double evalPostfix(const string &expr) {
+    istringstream iss(expr);
+    string tok;
+    Stack<double> st;
+    while (iss >> tok) {
+        if (isOperator(tok)) {
+            if (st.size() < 2) throw runtime_error("Invalid postfix expression: not enough operands");
+            double b = st.pop();
+            double a = st.pop();
+            st.push(applyOp(tok, a, b));
+        } else {
+            // parse number (supports integer and decimal)
+            double val = stod(tok);
+            st.push(val);
+        }
+    }
+    if (st.size() != 1) throw runtime_error("Invalid postfix expression: leftover values");
+    return st.pop();
+}
+
+// Evaluate prefix expression. Tokens must be space-separated.
+double evalPrefix(const string &expr) {
+    // Tokenize into vector
+    istringstream iss(expr);
+    vector<string> tokens;
+    string tok;
+    while (iss >> tok) tokens.push_back(tok);
+
+    Stack<double> st;
+    // iterate from right to left
+    for (int i = (int)tokens.size() - 1; i >= 0; --i) {
+        tok = tokens[i];
+        if (isOperator(tok)) {
+            if (st.size() < 2) throw runtime_error("Invalid prefix expression: not enough operands");
+            double a = st.pop();
+            double b = st.pop();
+            st.push(applyOp(tok, a, b));
+        } else {
+            st.push(stod(tok));
+        }
+    }
+    if (st.size() != 1) throw runtime_error("Invalid prefix expression: leftover values");
+    return st.pop();
+}
+
+// trim leading/trailing spaces (small helper)
+static inline string trim(const string &s) {
+    const char *ws = " \t\n\r\f\v";
+    size_t start = s.find_first_not_of(ws);
+    if (start == string::npos) return "";
+    size_t end = s.find_last_not_of(ws);
+    return s.substr(start, end - start + 1);
+}
+
+int main() {
+    vector<pair<string,string>> examples = {
+        {"postfix", "3 4 + 2 * 7 /"},          // ((3+4)*2)/7 = 2.0
+        {"postfix", "5 1 2 + 4 * + 3 -"},      // 5 + ((1+2)*4) - 3 = 14
+        {"prefix", "+ 3 * 4 5"},               // 3 + (4*5) = 23
+        {"prefix", "- + 5 * 1 2 3"}            // (5 + (1*2)) - 3 = 4
+    };
+
+    for (auto &ex : examples) {
+        try {
+            if (ex.first == "postfix") {
+                cout << "Postfix: \"" << ex.second << "\"  =>  " << evalPostfix(ex.second) << "\n";
+            } else {
+                cout << "Prefix:  \"" << ex.second << "\"  =>  " << evalPrefix(ex.second) << "\n";
+            }
+        } catch (const exception &e) {
+            cout << "Error evaluating \"" << ex.second << "\": " << e.what() << "\n";
+        }
+    }
+
+    // Interactive usage example:
+    cout << "\nEnter 'p' for postfix or 'x' for prefix, then the expression (space-separated tokens).\n";
+    cout << "Example postfix: p 3 4 + 2 * 7 /\n";
+    cout << "Example prefix:  x + 3 * 4 5\n";
+
+    string mode;
+    if (cin >> mode) {
+        string expr;
+        getline(cin, expr); // read rest of the line (the expression)
+        expr = trim(expr);
+        try {
+            if (mode == "p" || mode == "P") {
+                cout << evalPostfix(expr) << "\n";
+            } else if (mode == "x" || mode == "X") {
+                cout << evalPrefix(expr) << "\n";
+            } else {
+                cout << "Unknown mode. Use 'p' for postfix or 'x' for prefix.\n";
+            }
+        } catch (const exception &e) {
+            cout << "Error: " << e.what() << "\n";
+        }
+    }
+
+    return 0;
+}
+
+
+OUTPUT
+Postfix: "3 4 + 2 * 7 /"  =>  2
+Postfix: "5 1 2 + 4 * + 3 -"  =>  14
+Prefix:  "+ 3 * 4 5"  =>  23
+Prefix:  "- + 5 * 1 2 3"  =>  4
+
+Enter 'p' for postfix or 'x' for prefix, then the expression (space-separated tokens).
+Example postfix: p 3 4 + 2 * 7 /
+Example prefix:  x + 3 * 4 5
+
