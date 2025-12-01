@@ -11,167 +11,113 @@ class Node {
 public:
     int val;
     Node* next;
-    Node* prev; // Pointer to the previous node
+    Node* prev;
 
     Node(int data) {
         val = data;
         next = NULL;
-        prev = NULL; // Initialize prev to NULL
+        prev = NULL;
     }
 };
 
 class DoublyLinkedList {
     Node* head;
+    Node* tail;
+
 public:
-    DoublyLinkedList() : head(NULL) {} // Initialize head to NULL , Null will
+    DoublyLinkedList() {
+        head = NULL;
+        tail = NULL;
+    }
+
+    // i. Insert at beginning
+    void insertAtBeginning(int x) {
+        Node* newNode = new Node(x);
+        if (head == NULL) {
+            head = tail = newNode;
+        } else {
+            newNode->next = head;
+            head->prev = newNode;
+            head = newNode;
+        }
+    }
+
+    // ii. Insert at end
+    void insertAtEnd(int x) {
+        Node* newNode = new Node(x);
+        if (tail == NULL) {
+            head = tail = newNode;
+        } else {
+            tail->next = newNode;
+            newNode->prev = tail;
+            tail = newNode;
+        }
+    }
+
+    // iii. Remove from beginning
+    void removeFromBeginning() {
+        if (head == NULL) {
+            cout << "List is empty.\n";
+            return;
+        }
+        Node* temp = head;
+        if (head == tail) {
+            head = tail = NULL;
+        } else {
+            head = head->next;
+            head->prev = NULL;
+        }
+        delete temp;
+    }
+
+    // iv. Remove from end
+    void removeFromEnd() {
+        if (tail == NULL) {
+            cout << "List is empty.\n";
+            return;
+        }
+        Node* temp = tail;
+        if (head == tail) {
+            head = tail = NULL;
+        } else {
+            tail = tail->prev;
+            tail->next = NULL;
+        }
+        delete temp;
+    }
 
     void display() {
         Node* temp = head;
         while (temp != NULL) {
-            cout << temp->val << " <-> ";
+            cout << temp->val << " ";
             temp = temp->next;
         }
-        cout << "Null\n";
-    }
-
-    void insertAtHead(int val) {
-        Node* newNode = new Node(val);
-        newNode->next = head;
-        if (head != NULL) {
-            head->prev = newNode; // Update the previous pointer of the old head
-        }
-        head = newNode;
-    }
-
-    void insertAtTail(int val) {
-        Node* newNode = new Node(val);
-        if (head == NULL) { // If the list is empty
-            head = newNode;
-            return;
-        }
-        Node* temp = head;
-        while (temp->next != NULL) {
-            temp = temp->next;
-        }
-        temp->next = newNode;
-        newNode->prev = temp; // Set the previous pointer of the new tail
-    }
-
-    void insertAtPosition(int val, int pos) {
-        Node* newNode = new Node(val);
-        if (pos == 0) {
-            insertAtHead(val);
-            return;
-        }
-        Node* temp = head;
-        int currentPos = 0;
-        while (temp != NULL && currentPos != pos - 1) {
-            temp = temp->next;
-            currentPos++;
-        }
-        if (temp == NULL) {
-            cout << "Position out of bounds." << endl;
-            delete newNode; // Clean up newNode since we won't use it
-            return;
-        }
-        newNode->next = temp->next;
-        if (temp->next != NULL) {
-            temp->next->prev = newNode; // Update the previous pointer of the next node
-        }
-        temp->next = newNode;
-        newNode->prev = temp; // Set the previous pointer of the new node
-    }
-
-    void deleteAtHead() {
-        if (head == NULL) return; // If the list is empty
-        Node* temp = head;
-        head = head->next;
-        if (head != NULL) {
-            head->prev = NULL; // Update the previous pointer of the new head
-        }
-        delete temp; // Use delete instead of free
-    }
-
-    void deleteAtTail() {
-        if (head == NULL) return; // If the list is empty
-        if (head->next == NULL) { // If there's only one element
-            delete head;
-            head = NULL;
-            return;
-        }
-        Node* temp = head;
-        while (temp->next != NULL) {
-            temp = temp->next;
-        }
-        temp->prev->next = NULL; // Remove the last node
-        delete temp; // Use delete instead of free
-    }
-
-    void deleteAtPosition(int pos) {
-        if (pos == 0) {
-            deleteAtHead();
-            return;
-        }
-        Node* temp = head;
-        int curPos = 0;
-        while (temp != NULL && curPos != pos) {
-            temp = temp->next;
-            curPos++;
-        }
-        if (temp == NULL) {
-            cout << "Position out of bounds." << endl;
-            return;
-        }
-        if (temp->prev != NULL) {
-            temp->prev->next = temp->next; // Bypass the node to delete
-        }
-        if (temp->next != NULL) {
-            temp->next->prev = temp->prev; // Update the previous pointer of the next node
-        }
-        delete temp; // Use delete instead of free
-    }
-
-    void concatenate(DoublyLinkedList& other) {
-        if (other.head == NULL) return; //
-
-        if (head == NULL) { 
-            head = other.head;
-        } else {
-            Node* temp = head;
-            while (temp->next != NULL) {
-                temp = temp->next;
-            }
-            temp->next = other.head; 
-            other.head->prev = temp; // Update the previous pointer of the other list's head
-        }
+        cout << endl;
     }
 };
 
 int main() {
-    DoublyLinkedList list1;
-    list1.insertAtHead(7);
-    list1.insertAtHead(9);
-    list1.insertAtTail(3);
-    list1.insertAtPosition(8, 0);
-    list1.insertAtPosition(12, 4);
-    list1.insertAtPosition(30,3);
-    list1.display();
+    DoublyLinkedList dl;
 
-    DoublyLinkedList list2;
-    list2.insertAtHead(7);
-    list2.insertAtTail(5);
-    list2.insertAtTail(1);
-    list2.insertAtTail(2);
-    list2.insertAtTail(7);
-    list2.display();
-    
-    list1.concatenate(list2);
-    list1.display();
+    dl.insertAtBeginning(30);
+    dl.insertAtBeginning(20);
+    dl.insertAtBeginning(10);
+
+    dl.insertAtEnd(40);
+    dl.insertAtEnd(50);
+
+    cout << "List: ";
+    dl.display();
+
+    dl.removeFromBeginning();
+    dl.removeFromEnd();
+
+    cout << "After removals: ";
+    dl.display();
 
     return 0;
 }
 
-OUTPUT
-8 <-> 9 <-> 7 <-> 30 <-> 3 <-> 12 <-> Null
-7 <-> 5 <-> 1 <-> 2 <-> 7 <-> Null
-8 <-> 9 <-> 7 <-> 30 <-> 3 <-> 12 <-> 7 <-> 5 <-> 1 <-> 2 <-> 7 <-> Null
+output:
+List: 10 20 30 40 50
+After removals: 20 30 40
